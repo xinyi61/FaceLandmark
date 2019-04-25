@@ -15,6 +15,7 @@ import os
 import os.path as osp
 
 import cv2
+import numpy as np
 
 class WFLW:
     def __init__(self, path:str):
@@ -45,7 +46,7 @@ class WFLW:
         if training:
             # x0 y0  ...  x97 y97  x_min_rect y_min_rect x_max_rect y_max_rect attrs path
             for ann in annlist:
-                landmarks.append([float(a) for a in ann[:196]])
+                landmarks.append(np.fromiter(ann[:196], dtype=np.float32))
                 rects.append([int(a) for a in ann[196:200]])
                 attrs.append([int(a) for a in ann[200:206]])
                 paths.append(ann[206])
@@ -99,16 +100,53 @@ class WFLW:
     def data_prepare(self, landmark, rect, attr, path):
         image = cv2.imread(osp.join(self.images_directory, path))
         # create new bbox
-        margin = 15
+        margin = int((rect[2] - rect[0]) * 0.4)
         y_min = max(rect[1]-margin, 0)
         y_max = min(rect[3]+margin, image.shape[0])
         x_min = max(rect[0]-margin, 0)
         x_max = min(rect[2]+margin, image.shape[1])
         image = image[y_min:y_max, x_min:x_max, :]
-        for i in range(0, len(landmark), 2):
-            landmark[i] = landmark[i] - float(x_min)
-            landmark[i+1] = landmark[i+1] - float(y_min)
+        landmark[::2] -= x_min
+        landmark[1::2] -= y_min
         return landmark, image
+
+
+class Transformer(object):
+    def __init__(self, target_height, target_width):
+        self.height = target_height
+        self.width = target_width
+
+    def letterbox(self, image, landmark):
+        """scale image to match input size of network.
+        When training, padding offset and scale is not needed"""
+        canvas = np.full((self.height, self.width, 3), 128, dtype=np.uint8)
+        height, width = image.shape[:2]
+        offset_x = 0
+        offset_y = 0
+        if height > width:
+            scale = self.height / height
+            width_ = int(width * scale)
+            image_ = cv2.resize(image, (width_, self.height))
+            offset_x = (self.width - width_) // 2
+            canvas[:, offset_x:offset_x+width_, :] = image_[:, :, :]
+        else:
+            scale = self.width / width
+            height_ = int(height * scale)
+            image_ = cv2.resize(image, (self.width, height_))
+            offset_y = (self.height - height_) // 2
+            canvas[offset_y:offset_y+height_, :, :] = image_[:, :, :]
+        # tranform landmark
+        landmark *= scale
+        landmark[::2] += offset_x
+        landmark[1::2] += offset_y
+        return canvas, landmark, (scale, offset_x, offset_y)
+
+    def dis_letterbox(self, landmark, scale, offset_x, offset_y):
+        pass
+
+
+
+
 
 
 def plot(image, landmarks, output):
@@ -119,7 +157,12 @@ def plot(image, landmarks, output):
 
 if __name__ == '__main__':
     dataset = WFLW('data/WFLW')
-    for landmarks, images in dataset.data_generator(2, mode='valid'):
+    ts = Transformer(target_height=224, target_width=224)
+    for landmarks, images in dataset.data_generator(4, mode='valid'):
         for i, (landmark, image) in enumerate(zip(landmarks, images)):
             plot(image, landmark, "test/test_{}.png".format(i))
+            new_image, new_landmark, _ = ts.letterbox(image, landmark)
+            plot(new_image, new_landmark, "test/new_{}.png".format(i))
         break
+
+
