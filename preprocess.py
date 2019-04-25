@@ -141,11 +141,15 @@ class Transformer(object):
         landmark[1::2] += offset_y
         return canvas, landmark, (scale, offset_x, offset_y)
 
-    def dis_letterbox(self, landmark, scale, offset_x, offset_y):
-        pass
+    def inverse_letterbox(self, landmark, scale, offset_x, offset_y):
+        landmark[::2] -= offset_x
+        landmark[1::2] -= offset_y
+        landmark /= scale
+        return landmark
 
-
-
+    @staticmethod
+    def normalize(image):
+        return image / 255.0
 
 
 
