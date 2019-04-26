@@ -17,6 +17,8 @@ import os.path as osp
 import cv2
 import numpy as np
 
+import torch
+
 class WFLW:
     def __init__(self, path:str):
         # setup paths
@@ -116,6 +118,9 @@ class Transformer(object):
         self.height = target_height
         self.width = target_width
 
+    def transform(self, image):
+        pass
+
     def letterbox(self, image, landmark):
         """scale image to match input size of network.
         When training, padding offset and scale is not needed"""
@@ -147,8 +152,7 @@ class Transformer(object):
         landmark /= scale
         return landmark
 
-    @staticmethod
-    def normalize(image):
+    def normalize(self, image):
         return image / 255.0
 
 

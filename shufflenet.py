@@ -3,8 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-
-
 class ShuffleUnit(nn.Module):
 
     @staticmethod
@@ -22,7 +20,6 @@ class ShuffleUnit(nn.Module):
 
     @staticmethod
     def _concat(residual, x):
-        print(residual.shape, x.shape)
         return torch.cat((residual, x), 1)
 
     def __init__(self, in_channels, out_channels, groups=3, combine='add'):
@@ -61,7 +58,6 @@ class ShuffleUnit(nn.Module):
         # figure 2(c) in Paper
         if self.combine == 'concat':
             residual = F.avg_pool2d(residual, kernel_size=3, stride=2, padding=1)
-            print("residual shape after avg_pool", residual.shape)
 
         # compress
         x = self.Conv1x1_in(x)
@@ -93,7 +89,6 @@ class ShuffleNet(nn.Module):
 
     def forward(self, x):
         x = self.conv(x)
-        print(x.shape)
         x = self.su1(x)
         x = self.su2(x)
         x = self.su3(x)
@@ -105,8 +100,8 @@ class ShuffleNet(nn.Module):
 
 
 if __name__ == "__main__":
-    inputs = torch.randn(32, 3, 128, 128)
-    net = ShuffleNet(128, 3, 196)
+    inputs = torch.randn(32, 3, 224, 224)
+    net = ShuffleNet(224, 3, 196)
     net.train()
     outputs = net(inputs)
     print(net)
