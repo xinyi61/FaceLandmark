@@ -35,11 +35,11 @@ git clone https://github.com/siriusdemon/ShuffleNet-Face-Landmark.git
 cd ShuffleNet-Face-Landmark
 ```
 2. for detection, follow `detect.py` script
-```
+```bash
 python detect.py
 ```
 3. for training, you can define your own model in `shuffflenet.py` and replace in `train.py`. `train.py` already provides an example.
-```
+```bash
 python train.py
 ```
 
