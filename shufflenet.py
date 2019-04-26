@@ -77,6 +77,7 @@ class ShuffleUnit(nn.Module):
 
 
 class ShuffleNet(nn.Module):
+    """work as a startup"""
     def __init__(self, input_size, in_channels, num_classes):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, 24, kernel_size=3, stride=2, padding=1) # 1/2

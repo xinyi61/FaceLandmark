@@ -157,13 +157,9 @@ class Transformer(object):
 
 
 
-def plot(image, landmarks, output):
-    for i in range(0, len(landmarks), 2):
-        cv2.circle(image, (int(landmarks[i]), int(landmarks[i+1])), 2, (128, 0, 255), 2)
-    cv2.imwrite(output, image)
-
 
 if __name__ == '__main__':
+    from vutils import plot
     dataset = WFLW('data/WFLW')
     ts = Transformer(target_height=224, target_width=224)
     for landmarks, images in dataset.data_generator(4, mode='valid'):
