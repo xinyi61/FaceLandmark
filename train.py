@@ -21,7 +21,7 @@ def train(epochs):
     minloss = 99999
     if len(sys.argv) == 2:
         net.load_state_dict(torch.load(sys.argv[1]))
-        minloss = float(sys.argv.split('_')[-1][:-4])
+        minloss = float(sys.argv[1].split('_')[-1][:-4])
 
 
     # dataset settings
@@ -33,10 +33,9 @@ def train(epochs):
     for epoch_i in range(epochs):
         trainset = dataset.data_generator(32, 'train')
         for batch_i, (X_train, y_train) in enumerate(trainset):
-            print(X_train[0].shape)
             ts_data = list(map(ts.letterbox, X_train, y_train))
-            X_train = torch.FloatTensor(ts.transform(x[0]) for x in ts_data).cuda()
-            y_train = torch.FloatTensor(x[1] for x in ts_data).cuda()
+            X_train = torch.FloatTensor([ts.transform(x[0]) for x in ts_data]).cuda()
+            y_train = torch.FloatTensor([x[1] for x in ts_data]).cuda()
 
             net.train()
             outputs = net(X_train)
@@ -45,13 +44,13 @@ def train(epochs):
             loss.backward()
             optimizer.step()
 
-            print(f"Epoch {epoch_i} Batch {batch_i}, Train Loss: {minloss:.3f}")
+            print(f"Epoch {epoch_i} Batch {batch_i}, Train Loss: {loss:.3f}")
 
             if batch_i > 0 and batch_i % 40 == 0:
                 X_valid, y_valid = next(validset)
                 ts_data = list(map(ts.letterbox, X_valid, y_valid))
-                X_valid = torch.FloatTensor(ts.transform(x[0]) for x in ts_data).cuda()
-                y_valid = torch.FloatTensor(x[1] for x in ts_data).cuda()
+                X_valid = torch.FloatTensor([ts.transform(x[0]) for x in ts_data]).cuda()
+                y_valid = torch.FloatTensor([x[1] for x in ts_data]).cuda()
 
                 with torch.no_grad():
                     net.eval()
@@ -63,4 +62,4 @@ def train(epochs):
                     print(f"Valid Loss: {minloss:.3f}")
 
 if __name__ == '__main__':
-    train(2)
+    train(1)
