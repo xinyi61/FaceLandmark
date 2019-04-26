@@ -31,7 +31,7 @@ conda install pytorch torchvision -c pytorch
 ## Usage
 1. clone the repo first.
 ```bash
-git clone https://github.com/siriusdemon/ShuffleNet-Face-Landmark.git
+git clone https://github.com/siriusdemon/FaceLandmark.git
 cd ShuffleNet-Face-Landmark
 ```
 2. for detection, follow `detect.py` script
