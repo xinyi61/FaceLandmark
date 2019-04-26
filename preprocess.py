@@ -96,7 +96,7 @@ class WFLW:
             for landmark, face in map(self.data_prepare, landmarks, rects, attrs, paths):
                 landmarklist.append(landmark)
                 facelist.append(face)
-            yield landmarklist, facelist
+            yield facelist, landmarklist
 
 
     def data_prepare(self, landmark, rect, attr, path):
@@ -119,7 +119,7 @@ class Transformer(object):
         self.width = target_width
 
     def transform(self, image):
-        pass
+        return np.transpose(self.normalize(image), (2, 0, 1))
 
     def letterbox(self, image, landmark):
         """scale image to match input size of network.
