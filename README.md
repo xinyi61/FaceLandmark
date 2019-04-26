@@ -1,4 +1,4 @@
-# ShuffleNet-Face-Landmark
+# FaceLandmark
 
 *__NOTE: This repo is not ready and is on active development.__*
 
