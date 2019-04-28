@@ -82,23 +82,58 @@ class ShuffleNet(nn.Module):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, 24, kernel_size=3, stride=2, padding=1) # 1/2
         self.su1 = ShuffleUnit(24, 24, groups=3, combine='add')
+        self.su11 = ShuffleUnit(24, 24, groups=3, combine='add')
+        self.su111 = ShuffleUnit(24, 24, groups=3, combine='add')
         self.su2 = ShuffleUnit(24, 48, groups=3, combine='concat') # 1/4
         self.su3 = ShuffleUnit(72, 72, groups=3, combine='add')
         self.su4 = ShuffleUnit(72, 72, groups=3, combine='concat') # 1/8
         self.su5 = ShuffleUnit(144, 144, groups=3, combine='concat') # 1/16
-        self.fc = nn.Linear(288 * input_size * input_size // 16 // 16, num_classes)
+        self.fc1 = nn.Linear(288 * input_size * input_size // 16 // 16, 1000)
+        self.fc2 = nn.Linear(1000, num_classes)
 
     def forward(self, x):
         x = self.conv(x)
         x = self.su1(x)
+        x = self.su11(x)
+        x = self.su111(x)
         x = self.su2(x)
         x = self.su3(x)
         x = self.su4(x)
         x = self.su5(x)
         x = x.view(x.shape[0], -1)
-        x = self.fc(x)
+        x = self.fc1(x)
+        x = self.fc2(x)
         return x
 
+class ConvNet(nn.Module):
+    def __init__(self, image_size, in_channels, num_classes):
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_channels, 32, kernel_size=3, stride=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=1)
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=1)
+        self.fc1 = nn.Linear(9216, 1024)
+        self.fc2 = nn.Linear(1024, 196)
+        self.dropout = nn.Dropout(0.5)
+        self.mp = nn.MaxPool2d(kernel_size=2, stride=2)
+
+    def forward(self, x):
+        x = self.mp(F.relu(self.conv1(x)))
+        x = self.mp(F.relu(self.conv2(x)))
+        x = self.mp(F.relu(self.conv3(x)))
+        x = self.mp(F.relu(self.conv4(x)))
+        x = x.view(x.shape[0], -1)
+        x = self.dropout(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+
+
+#class ShuffleNet(nn.Module):
+#    def __init__(self, in_channels, num_classes):
+#        super().__init__()
+#    def forward(self, x):
+#        pass
 
 if __name__ == "__main__":
     inputs = torch.randn(32, 3, 224, 224)
